@@ -285,7 +285,7 @@ int getBestScore() // ilyass
     return best;
 }
 
-void setBestScore(int score) // ilyassS
+void setBestScore(int score) // ilyass
 {
     char filePath[80];
     strcpy(filePath, getenv("APPDATA"));
