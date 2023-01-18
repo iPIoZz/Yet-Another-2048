@@ -1,7 +1,3 @@
-//
-// Created by iploz on 22/11/2022.
-//
-
 #ifndef SDLPROJECT_SDLFUNCTIONS_H
 #define SDLPROJECT_SDLFUNCTIONS_H
 
