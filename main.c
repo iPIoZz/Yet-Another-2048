@@ -1,6 +1,3 @@
-//#include <SDL.h>
-//#include <SDL_ttf.h>
-
 #include <time.h>
 #include "SDLfunctions.h"
 #include "functions.h"
