@@ -7,7 +7,7 @@
 #include <SDL_image.h>
 #include "functions.h"
 
-int colours[12][3] = {{60,  60,  60},
+int colours[12][3] = {{60,  60,  60}, // couleur de la puissance à l'index n
                       {238, 228, 218},
                       {237, 224, 198},
                       {242, 177, 121},
@@ -37,11 +37,49 @@ SDL_Rect createRect(int x, int y, int width, int height)
     return rect;
 }
 
+void setFontPath(char fontPath[80])
+{
+    char newFontPath[80] = "";
+    strcpy(newFontPath, getenv("windir"));
+    strcat(newFontPath, "\\Fonts\\micross.ttf");
+
+    FILE* f = fopen(newFontPath, "r");
+    if(f == NULL)
+        SDL_ExitWithError("Invalid font path");
+    else
+        strcpy(fontPath, newFontPath);
+    fclose(f);
+}
+
+void emptyGrid(int** grid)
+{
+    for(int i = 0; i < 10; i++)
+    {
+        for(int j = 0; j < 10; j++)
+        {
+            *(*(grid + i) + j) = 0;
+        }
+    }
+}
+
+void resetGrid(int** grid, time_t* lastResetTime)
+{
+    time_t currentTime = time(NULL);
+    if(currentTime - *lastResetTime <= 3 && *lastResetTime != 0)
+    {
+        *lastResetTime = currentTime;
+        emptyGrid(grid);
+    }
+    else
+    {
+        *lastResetTime = currentTime;
+    }
+}
+
 void renderButton(SDL_Renderer* renderer, int row, int column, int value, int base)
 {
     char fontPath[80];
-    strcpy(fontPath, getenv("APPDATA"));
-    strcat(fontPath, "\\YA2048\\resources\\micross.ttf");
+    setFontPath(fontPath);
 
     int convertedValue = convertValue(base, value);
 
@@ -67,8 +105,8 @@ void renderButton(SDL_Renderer* renderer, int row, int column, int value, int ba
         if(texture == NULL)
             SDL_ExitWithError("Texturea");
 
-        int xButtonCenter = button.x + (int)(button.w / 2) - (int)(text->w / 2); //3 + 7/2 = 6.5
-        int yButtonCenter = button.y + (int)(button.h / 2) - (int)(text->h / 2); //3 + 14/2 = 10
+        int xButtonCenter = button.x + (int)(button.w / 2) - (int)(text->w / 2);
+        int yButtonCenter = button.y + (int)(button.h / 2) - (int)(text->h / 2);
 
 
         SDL_Rect dst;
@@ -89,8 +127,7 @@ void renderButton(SDL_Renderer* renderer, int row, int column, int value, int ba
 void renderNextNumber(SDL_Renderer* renderer, int value, int base)
 {
     char fontPath[80];
-    strcpy(fontPath, getenv("APPDATA"));
-    strcat(fontPath, "\\YA2048\\resources\\micross.ttf");
+    setFontPath(fontPath);
 
     int convertedValue = convertValue(base, value);
 
@@ -162,8 +199,7 @@ void renderGrid(SDL_Renderer* renderer, int** grid)
 {
 
     char fontPath[80];
-    strcpy(fontPath, getenv("APPDATA"));
-    strcat(fontPath, "\\YA2048\\resources\\micross.ttf");
+    setFontPath(fontPath);
 
 
     for(int i = 0; i < 10; i++)
@@ -184,8 +220,7 @@ void renderGrid(SDL_Renderer* renderer, int** grid)
 void renderCurrentScore(SDL_Renderer* renderer, int score)
 {
     char fontPath[80];
-    strcpy(fontPath, getenv("APPDATA"));
-    strcat(fontPath, "\\YA2048\\resources\\micross.ttf");
+    setFontPath(fontPath);
 
 
     SDL_Rect rect = createRect(550, 120, 80, 80);
@@ -233,8 +268,7 @@ void renderCurrentScore(SDL_Renderer* renderer, int score)
 void renderBestScore(SDL_Renderer* renderer, int best, int score)
 {
     char fontPath[80];
-    strcpy(fontPath, getenv("APPDATA"));
-    strcat(fontPath, "\\YA2048\\resources\\micross.ttf");
+    setFontPath(fontPath);
 
     if(score > best)
     {
@@ -330,19 +364,19 @@ void destroyTTF(SDL_Window* window, SDL_Renderer* renderer)
     SDL_Quit();
 }
 
-void handleEvent(SDL_Event e, SDL_Window* window, SDL_Renderer* renderer, int** grid, int* nextNumber, int* score, char* filePath)
+void handleEvent(SDL_Event e, SDL_Window* window, SDL_Renderer* renderer, int** grid, int* nextNumber, int* score, char* filePath, time_t* lastResetTime)
 {
     while(SDL_PollEvent(&e) != 0)
     {
-        if(e.type == SDL_MOUSEBUTTONDOWN && e.button.clicks == SDL_BUTTON_LEFT)
+        if(e.type == SDL_MOUSEBUTTONDOWN && e.button.clicks == SDL_BUTTON_LEFT) // Si l'utilisateur fait clic gauche
         {
-            int xPos = e.button.x;
-            int yPos = e.button.y;
+            int xPos = e.button.x; // Obtention de la position du curseur relative à la fenêtre
+            int yPos = e.button.y; // --
             int xCoords,yCoords;
 
-            if((yPos >= 204 && yPos <= 242))
+            if((yPos >= 204 && yPos <= 242)) // Hauteur dans laquelle se trouvent les boutons de sauvegarde et d'ouverture
             {
-                if((xPos >= 550 && xPos <= 588)) //save file button
+                if((xPos >= 550 && xPos <= 588)) //Position du bouton de sauvegarde
                 {
                     if(filePath[0] != 0) {
                         saveCurrent(grid, nextNumber, score, filePath);
@@ -350,11 +384,11 @@ void handleEvent(SDL_Event e, SDL_Window* window, SDL_Renderer* renderer, int** 
                     else{
                         const char* lFilterPatterns[1] = {"*.dat"};
                         char* selection = tinyfd_saveFileDialog(
-                                        "Save progress",
-                                                "C:\\",
-                                                1,
-                                                lFilterPatterns,
-                                                NULL
+                                "Save progress",
+                                "C:\\",
+                                1,
+                                lFilterPatterns,
+                                NULL
                         );
                         if(selection != NULL)
                         {
@@ -362,92 +396,88 @@ void handleEvent(SDL_Event e, SDL_Window* window, SDL_Renderer* renderer, int** 
                         }
                     }
                 }
-                if(xPos >= 592 && xPos <= 630) //open file button
+                if(xPos >= 592 && xPos <= 630) //Position du bouton d'ouverture de sauvegarde
                 {
                     openSaveFile(grid, nextNumber, score, filePath);
                 }
+                if(xPos >= 634 && xPos <= 672 && time(NULL) - *lastResetTime >= 1) //Position de réinitalisation de grille
+                {
+                    resetGrid(grid, lastResetTime);
+                }
             }
 
-            getButtonCoords(xPos, yPos, &xCoords, &yCoords);
+            getButtonCoords(xPos, yPos, &xCoords, &yCoords); // Obtention de la case cliquée
 
-            if(xCoords >= 0 && yCoords >= 0)
+            if(xCoords >= 0 && yCoords >= 0) // Si on a cliqué sur une case (la valeur -1 est retournée si on ne clique sur aucune case)
             {
-                int frameValue = *(*(grid + xCoords) + yCoords);
-                if(frameValue == 0)
+                int frameValue = *(*(grid + xCoords) + yCoords); // valeur de la case cliquée
+                if(frameValue == 0) // Si la case est vide
                 {
-                    *(*(grid + xCoords) + yCoords) = *nextNumber;
+                    *(*(grid + xCoords) + yCoords) = *nextNumber; // Pose le prochain nombre à la case cliquée
 
-                    int rows[16] = {};
-                    int columns[16] = {};
-                    int result = checkSurroundings(grid, xCoords, yCoords, rows, columns);
-                    while(result >= 2)
+                    int rows[16] = {}; // Cases identiques
+                    int columns[16] = {}; // --
+                    int result = checkSurroundings(grid, xCoords, yCoords, rows, columns); // Fait une première vérification pour voir si fusion est possible
+                    while(result >= 2) // Tant qu'il peut y avoir des fusions
                     {
-                        for(int i = 0; i < result; i++)
+                        for(int i = 0; i < result; i++) // Boucle à travers tous les résultats
                         {
-                            *(*(grid + *(rows+i)) + *(columns+i)) = 0;
-                            *(rows+i) = NULL;
-                            *(columns+i) = NULL;
+                            *(*(grid + *(rows+i)) + *(columns+i)) = 0; // Vide les cases identiques
+                            *(rows+i) = NULL; // Supprime ces cases du tableau qui possède les cases identiques
+                            *(columns+i) = NULL; // --
                         }
-                        *(*(grid + xCoords) + yCoords) += 1;
-                        *score += *(*(grid + xCoords) + yCoords);
+                        *(*(grid + xCoords) + yCoords) += 1; // Ajoute un à la valeur de la case cliquée (si la base est de 2 la valeur convertie passera par exemple de 8 à 16)
+                        *score += *(*(grid + xCoords) + yCoords); // On ajoute au score la nouvelle valeur de la case cliquée
 
-                        result = checkSurroundings(grid, xCoords, yCoords, rows, columns);
+                        result = checkSurroundings(grid, xCoords, yCoords, rows, columns); // On refait une vérification pour voir si la fusion est possible et si elle l'est la boucle continuera
                     }
 
-                    if(*(*(grid + xCoords) + yCoords) >= 11)
+                    if(*(*(grid + xCoords) + yCoords) >= 11) // Vérifie si la valeur obtenue est supérieure ou égale à 11 (2^11 = 2048)
                     {
-                        SDL_ShowSimpleMessageBox(-1, "Yet Another 2048", "You have won!", window);
-                        for(int i = 0; i < 10; i++)
-                        {
-                            for(int j = 0; j < 10; j++)
-                            {
-                                *(*(grid + i) + j) = 0;
-                            }
-                        }
-                    }else if(checkLoss(grid))
+                        SDL_ShowSimpleMessageBox(-1, "Yet Another 2048", "Vous avez gagné!", window); // Déclare la victoire
+                        emptyGrid(grid);
+                    }else if(checkLoss(grid)) // Si l'utilisateur a perdu
                     {
-                        SDL_ShowSimpleMessageBox(-1, "Yet Another 2048", "You have lost!", window);
-                        for(int i = 0; i < 10; i++)
-                        {
-                            for(int j = 0; j < 10; j++)
-                            {
-                                *(*(grid + i) + j) = 0;
-                            }
-                        }
+                        SDL_ShowSimpleMessageBox(-1, "Yet Another 2048", "Vous avez perdu!", window); // Déclare la défaite
+                        emptyGrid(grid);
                     }
-                    generateNextNumber(5, nextNumber);
+                    generateNextNumber(5, nextNumber); // Génération de la valeur de la prochaine case à poser
                 }
             }
 
         }
-        if(e.type == SDL_QUIT || (e.type == SDL_KEYDOWN && e.key.keysym.sym == SDLK_q))
+        if(e.type == SDL_QUIT || (e.type == SDL_KEYDOWN && e.key.keysym.sym == SDLK_q)) // Touche Q pour fermer le jeu
         {
-            destroyTTF(window, renderer);
-            exit(0);
+            destroyTTF(window, renderer); // Détruit le système SDL
+            exit(0); // Ferme le jeu
         }
-        if((e.type == SDL_KEYDOWN && e.key.keysym.sym == SDLK_o))
+        if((e.type == SDL_KEYDOWN && e.key.keysym.sym == SDLK_o)) // Touche O pour ouvrir un fichier
         {
-            openSaveFile(grid, nextNumber, score, filePath);
+            openSaveFile(grid, nextNumber, score, filePath); // Ouvre un fichier
         }
-        if((e.type == SDL_KEYDOWN && e.key.keysym.sym == SDLK_s))
+        if((e.type == SDL_KEYDOWN && e.key.keysym.sym == SDLK_s)) // Touche S pour sauvegarder un fichier
         {
-            if(filePath[0] != 0) {
-                saveCurrent(grid, nextNumber, score, filePath);
+            if(filePath[0] != 0) { // Si le fichier de sauvegarde a déjà été selectionné
+                saveCurrent(grid, nextNumber, score, filePath); // Sauvegarde
             }
-            else{
+            else{ // Si le fichier de sauvegarde n'a pas déjà été selectionné
                 const char* lFilterPatterns[1] = {"*.dat"};
-                char* selection = tinyfd_saveFileDialog(
+                char* selection = tinyfd_saveFileDialog( // ouverture du dialogue d'ouverture de fichier
                         "Save progress",
                         "C:\\",
                         1,
                         lFilterPatterns,
                         NULL
                 );
-                if(selection != NULL)
+                if(selection != NULL) // Si ce qui a été sélectionné n'est pas null
                 {
-                    saveCurrent(grid, nextNumber, score, selection);
+                    saveCurrent(grid, nextNumber, score, selection); // Sauvegarde
                 }
             }
+        }
+        if((e.type == SDL_KEYDOWN && e.key.keysym.sym == SDLK_r && time(NULL) - *lastResetTime >= 1)) // Touche R pour réinitailiser la grille
+        {   // vérification pour être sûr que la personne n'a pas faite exprès d'appuyer sur la touche plusieurs fois
+            resetGrid(grid, lastResetTime); // réinitialisation de la grille
         }
     }
 }
