@@ -1,3 +1,6 @@
+//#include <SDL.h>
+//#include <SDL_ttf.h>
+
 #include <time.h>
 #include "SDLfunctions.h"
 #include "functions.h"
@@ -39,14 +42,16 @@ int main(int argc, char **argv)
 
     createResourceFiles();
     int bestScore = getBestScore();
+    time_t lastResetTime = 0;
 
     while(1)
     {
-        handleEvent(ev, window, renderer, grid, &nextNumber, &score, currentSavePath);
+        handleEvent(ev, window, renderer, grid, &nextNumber, &score, currentSavePath, &lastResetTime);
         renderCurrentScore(renderer, score);
         renderBestScore(renderer, bestScore, score);
         renderImage(renderer, 550, 204, 38, 38, "save");
         renderImage(renderer, 592, 204, 38, 38, "open");
+        renderImage(renderer, 634, 204, 38, 38, "reset");
         renderGrid(renderer, grid);
         renderNextNumber(renderer, nextNumber, 2);
         SDL_RenderPresent(renderer);
