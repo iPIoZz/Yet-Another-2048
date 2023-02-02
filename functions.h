@@ -88,7 +88,7 @@ void createResourceFiles() // léo
 
 char* intToString(int integer) // ronan
 {
-    int n = log10(integer) + 1; // si tu fais log(9986) ça va te donner 4 parce que c'est le nombre d'unités, c'est utile pour savoir combien de chiffres ya
+    int n = log10(integer) + 1; // si l'on fait log(9986) ça va donner 4 parce que c'est le nombre d'unités, c'est utile pour savoir combien de chiffres il y a
     int i;
     char *numberArray = calloc(n, sizeof(char));
 
