@@ -66,14 +66,8 @@ void resetGrid(int** grid, time_t* lastResetTime)
 {
     time_t currentTime = time(NULL);
     if(currentTime - *lastResetTime <= 1 && *lastResetTime != 0)
-    {
-        *lastResetTime = currentTime;
         emptyGrid(grid);
-    }
-    else
-    {
-        *lastResetTime = currentTime;
-    }
+    *lastResetTime = currentTime;
 }
 
 void renderButton(SDL_Renderer* renderer, int row, int column, int value, int base)
@@ -374,9 +368,9 @@ void handleEvent(SDL_Event e, SDL_Window* window, SDL_Renderer* renderer, int** 
             int yPos = e.button.y; // --
             int xCoords,yCoords;
 
-            if((yPos >= 204 && yPos <= 242)) // Hauteur dans laquelle se trouvent les boutons de sauvegarde et d'ouverture
+            if(yPos >= 204 && yPos <= 242) // Hauteur dans laquelle se trouvent les boutons de sauvegarde et d'ouverture
             {
-                if((xPos >= 550 && xPos <= 588)) //Position du bouton de sauvegarde
+                if(xPos >= 550 && xPos <= 588) //Position du bouton de sauvegarde
                 {
                     if(filePath[0] != 0) {
                         saveCurrent(grid, nextNumber, score, filePath);
@@ -400,7 +394,7 @@ void handleEvent(SDL_Event e, SDL_Window* window, SDL_Renderer* renderer, int** 
                 {
                     openSaveFile(grid, nextNumber, score, filePath);
                 }
-                if(xPos >= 634 && xPos <= 672 && time(NULL) - *lastResetTime >= 1) //Position de réinitalisation de grille
+                if(xPos >= 634 && xPos <= 672) //Position de réinitalisation de grille
                 {
                     resetGrid(grid, lastResetTime);
                 }
@@ -451,11 +445,11 @@ void handleEvent(SDL_Event e, SDL_Window* window, SDL_Renderer* renderer, int** 
             destroyTTF(window, renderer); // Détruit le système SDL
             exit(0); // Ferme le jeu
         }
-        if((e.type == SDL_KEYDOWN && e.key.keysym.sym == SDLK_o)) // Touche O pour ouvrir un fichier
+        if(e.type == SDL_KEYDOWN && e.key.keysym.sym == SDLK_o) // Touche O pour ouvrir un fichier
         {
             openSaveFile(grid, nextNumber, score, filePath); // Ouvre un fichier
         }
-        if((e.type == SDL_KEYDOWN && e.key.keysym.sym == SDLK_s)) // Touche S pour sauvegarder un fichier
+        if(e.type == SDL_KEYDOWN && e.key.keysym.sym == SDLK_s) // Touche S pour sauvegarder un fichier
         {
             if(filePath[0] != 0) { // Si le fichier de sauvegarde a déjà été selectionné
                 saveCurrent(grid, nextNumber, score, filePath); // Sauvegarde
@@ -475,7 +469,7 @@ void handleEvent(SDL_Event e, SDL_Window* window, SDL_Renderer* renderer, int** 
                 }
             }
         }
-        if((e.type == SDL_KEYDOWN && e.key.keysym.sym == SDLK_r && time(NULL) - *lastResetTime >= 1)) // Touche R pour réinitailiser la grille
+        if(e.type == SDL_KEYDOWN && e.key.keysym.sym == SDLK_r) // Touche R pour réinitailiser la grille
         {   // vérification pour être sûr que la personne n'a pas faite exprès d'appuyer sur la touche plusieurs fois
             resetGrid(grid, lastResetTime); // réinitialisation de la grille
         }
