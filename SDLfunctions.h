@@ -51,7 +51,7 @@ void setFontPath(char fontPath[80])
     fclose(f);
 }
 
-void emptyGrid(int** grid)
+void emptyGrid(int** grid, int* score, int* currentFilePath)
 {
     for(int i = 0; i < 10; i++)
     {
@@ -60,13 +60,15 @@ void emptyGrid(int** grid)
             *(*(grid + i) + j) = 0;
         }
     }
+    *score = 0;
+    *currentFilePath = "";
 }
 
-void resetGrid(int** grid, time_t* lastResetTime)
+void resetGrid(int** grid, time_t* lastResetTime, int* score, int* currentFilePath)
 {
     time_t currentTime = time(NULL);
     if(currentTime - *lastResetTime <= 1 && *lastResetTime != 0)
-        emptyGrid(grid);
+        emptyGrid(grid, score, currentFilePath);
     *lastResetTime = currentTime;
 }
 
@@ -396,7 +398,7 @@ void handleEvent(SDL_Event e, SDL_Window* window, SDL_Renderer* renderer, int** 
                 }
                 if(xPos >= 634 && xPos <= 672) //Position de réinitalisation de grille
                 {
-                    resetGrid(grid, lastResetTime);
+                    resetGrid(grid, lastResetTime, score, filePath);
                 }
             }
 
@@ -429,11 +431,11 @@ void handleEvent(SDL_Event e, SDL_Window* window, SDL_Renderer* renderer, int** 
                     if(*(*(grid + xCoords) + yCoords) >= 11) // Vérifie si la valeur obtenue est supérieure ou égale à 11 (2^11 = 2048)
                     {
                         SDL_ShowSimpleMessageBox(-1, "Yet Another 2048", "Vous avez gagné!", window); // Déclare la victoire
-                        emptyGrid(grid);
+                        emptyGrid(grid, score, filePath);
                     }else if(checkLoss(grid)) // Si l'utilisateur a perdu
                     {
                         SDL_ShowSimpleMessageBox(-1, "Yet Another 2048", "Vous avez perdu!", window); // Déclare la défaite
-                        emptyGrid(grid);
+                        emptyGrid(grid, score, filePath);
                     }
                     generateNextNumber(5, nextNumber); // Génération de la valeur de la prochaine case à poser
                 }
@@ -471,7 +473,7 @@ void handleEvent(SDL_Event e, SDL_Window* window, SDL_Renderer* renderer, int** 
         }
         if(e.type == SDL_KEYDOWN && e.key.keysym.sym == SDLK_r) // Touche R pour réinitailiser la grille
         {   // vérification pour être sûr que la personne n'a pas faite exprès d'appuyer sur la touche plusieurs fois
-            resetGrid(grid, lastResetTime); // réinitialisation de la grille
+            resetGrid(grid, lastResetTime, score, filePath); // réinitialisation de la grille
         }
     }
 }
