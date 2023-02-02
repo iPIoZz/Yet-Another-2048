@@ -65,7 +65,7 @@ void emptyGrid(int** grid)
 void resetGrid(int** grid, time_t* lastResetTime)
 {
     time_t currentTime = time(NULL);
-    if(currentTime - *lastResetTime <= 3 && *lastResetTime != 0)
+    if(currentTime - *lastResetTime <= 1 && *lastResetTime != 0)
     {
         *lastResetTime = currentTime;
         emptyGrid(grid);
