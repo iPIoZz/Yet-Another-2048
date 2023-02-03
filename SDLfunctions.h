@@ -62,6 +62,7 @@ void emptyGrid(int** grid, int* score, int* currentFilePath)
     }
     *score = 0;
     *currentFilePath = "";
+    *currentFilePath = '\0';
 }
 
 void resetGrid(int** grid, time_t* lastResetTime, int* score, int* currentFilePath)
@@ -411,8 +412,8 @@ void handleEvent(SDL_Event e, SDL_Window* window, SDL_Renderer* renderer, int** 
                 {
                     *(*(grid + xCoords) + yCoords) = *nextNumber; // Pose le prochain nombre à la case cliquée
 
-                    int rows[16] = {}; // Cases identiques
-                    int columns[16] = {}; // --
+                    int rows[16] = {-1}; // Cases identiques
+                    int columns[16] = {-1}; // --
                     int result = checkSurroundings(grid, xCoords, yCoords, rows, columns); // Fait une première vérification pour voir si fusion est possible
                     while(result >= 2) // Tant qu'il peut y avoir des fusions
                     {
