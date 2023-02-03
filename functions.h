@@ -261,10 +261,8 @@ int checkSurroundings(int** grid, int row, int column, int resultRows[16], int r
     {
         int checkRow = row + *(*(checklist+i)); // ligne de la position à vérifier
         int checkColumn = column + *(*(checklist+i) + 1); // colonne de la position à vérifier
-
         if( (checkRow >= 0 && checkRow < 10) && (checkColumn >= 0 && checkColumn < 10) ) // si c'est bien dans la grille (10x10)
         {
-
             int checkValue = *(*(grid + checkRow) + checkColumn); // valeur de la position vérifiée
             if(i % 4 == 0 && value != checkValue) // Vérifie si la position en question est directement adjacente à la case cliquée (positions 0 4 8 12) ET si leurs valeurs sont différentes
             {
@@ -276,10 +274,16 @@ int checkSurroundings(int** grid, int row, int column, int resultRows[16], int r
             {
                 int alreadyValidated = 0; // Booléen
 
+
                 for(int i = 0; i < 16; i++) // Boucle à travers
                 {
                     if(*(resultRows + i) == checkRow && *(resultColumns + i) == checkColumn) // Vérifie si la position a déjà été validée
                     {
+                        if(checkRow == 0 && checkColumn == 0)
+                            for(int i = 0; i < 16; i++)
+                            {
+                                printf("%d", *(resultRows + i));
+                            }
                         alreadyValidated++; // Si c'est le cas, la valeur alreadyValidated devient true
                     }
                 }
